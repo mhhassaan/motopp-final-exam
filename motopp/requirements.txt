@@ -1,0 +1,13 @@
+Flask-Login
+Flask-SQLAlchemy
+Flask-WTF
+macholib
+pip
+pipdeptree
+mysql-connector-python
+pymysql
+cryptography
+requests
+beautifulsoup4
+pandas
+redis

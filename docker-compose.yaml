@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_DATABASE: motopp
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  motopp:
+    build: ./motopp
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      SECRET_KEY: "${SECRET_KEY}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_HOST: mysql
+      REDIS_HOST: redis
+      FLASK_ENV: production
+    ports:
+      - "5000:5000"
+    command: ["sh", "-c", "sleep 10 && /app/motopp/run.sh -d 0"]
+
+# This section is required to define the volume used by mysql above
+volumes:
+  mysql_data: {}
