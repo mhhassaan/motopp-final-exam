@@ -1,0 +1,56 @@
+---
+- name: Configure K8s Node
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install dependencies
+      apt:
+        name:
+          - docker.io
+          - conntrack
+          - curl
+          - git
+        state: present
+
+    - name: Start Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Install Kubectl
+      get_url:
+        # Updated to a newer stable version
+        url: "https://dl.k8s.io/release/v1.28.2/bin/linux/amd64/kubectl"
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+
+    - name: Install Minikube
+      get_url:
+        url: "https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64"
+        dest: /usr/local/bin/minikube
+        mode: '0755'
+
+    # CHECK FIRST: Don't restart Minikube if it is already running
+    - name: Check Minikube status
+      become_user: ubuntu
+      command: minikube status
+      register: minikube_status
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Start Minikube (Safe Mode)
+      become_user: ubuntu
+      # CRITICAL FIX: Added --memory=2200mb to prevent server crash
+      shell: minikube start --driver=docker --memory=6000mb
+      when: "'Running' not in minikube_status.stdout"
