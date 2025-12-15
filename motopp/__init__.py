@@ -1,12 +1,14 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_redis import FlaskRedis  # <--- ADDED IMPORT
 from logging.config import dictConfig
 from . import config
 from typing import Any
 
 # Configure database
 db = SQLAlchemy()
+redis_client = FlaskRedis()         # <--- ADDED INITIALIZATION
 
 # Configure logging
 dictConfig({
@@ -35,6 +37,8 @@ def create_app() -> Flask:
     app.config.from_object(config.Config)
 
     db.init_app(app)
+    redis_client.init_app(app)  # <--- ADDED: Connects to Redis using REDIS_URL from Config
+    
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
     login_manager.init_app(app)
@@ -64,4 +68,3 @@ def create_app() -> Flask:
         db.create_all()
 
     return app
-
