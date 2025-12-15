@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">
+    Welcome, {{name}}!
+</h1>
+
+<h1>My Bikes</h1>
+{% if bikes %}
+<ul>
+    {% for bike in bikes %}
+    <li>{{ bike.name }} - {{ bike.make }} - {{ bike.model }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>You have no bikes added yet.</p>
+{% endif %}
+<p><a href="{{ url_for('main.add_bike') }}">Add Bike</a></p>
+
+{% endblock %}

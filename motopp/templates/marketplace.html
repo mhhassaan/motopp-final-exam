@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for part in parts %}
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">{{ part.name }}</h5>
+        <p class="card-text">{{ part.price }}</p>
+        <a href="{{ part.external_url }}" class="btn btn-primary">View on external site</a>
+        <button class="btn btn-success swipe-right" data-part-id="{{ part.id }}">Add to Wishlist</button>
+        <button class="btn btn-danger swipe-left" data-part-id="{{ part.id }}">Dismiss</button>
+    </div>
+</div>
+{% endfor %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Swipe/2.0.0/swipe.min.js"></script>
+<script>
+    var swipe = new Swipe(document.getElementById('marketplace'));
+
+    // Handle swipe left event
+    swipe.on('swipeLeft', function () {
+        var partId = swipe.getPos();
+        var part = document.querySelector('[data-part-id="' + partId + '"]');
+        dismissPart(partId);
+    });
+
+    // Handle swipe right event
+    swipe.on('swipeRight', function () {
+        var partId = swipe.getPos();
+        var part = document.querySelector('[data-part-id="' + partId + '"]');
+        addToWishlist(partId);
+    });
+
+    // Function to dismiss a part
+    function dismissPart(partId) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/dismiss_part');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                swipe.next();
+            }
+        };
+        xhr.send(JSON.stringify({'part_id': partId}));
+    }
+
+    // Function to add a part to the wishlist
+    function addToWishlist(partId) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/add_to_wishlist');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                swipe.next();
+            }
+        };
+        xhr.send(JSON.stringify({'part_id': partId}));
+    }
+</script>
+
+{% endblock %}
